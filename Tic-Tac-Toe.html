@@ -1,0 +1,228 @@
+<head>
+    <style>
+        body {
+            background-color: #14bdacff;
+        }
+        .container {
+            /*border: 3px solid #0DA192ff;*/
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            display: grid;
+            gap: 10px; /*when it is 20 then un2anted grid bordr comes*/
+            background: #0da192ff;
+            grid-template-columns: repeat(3, 1fr);
+            width: fit-content;
+        }
+
+        .container div {
+            /*border: 3px solid #0DA192ff;*/
+            width: 100px;
+            height: 100px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-size: 40px;
+            color: white;
+            background: #14bdacff;
+        }
+
+        #lineLayer {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+        }
+        .container div.x {
+            color: #f2ebd3;
+            font-size: 92px;
+        }
+
+        .container div.o {
+            color: #545454;
+            font-size: 92px;
+        }
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: #14bdacff;
+            /*z-index:9999;*/
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div></div>
+        <div></div>
+        <div></div>
+
+        <div></div>
+        <div></div>
+        <div></div>
+
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <svg id="lineLayer">
+        <line
+            id="winLine"
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="0"
+            stroke="#545454"
+            stroke-width="8"
+            visibility="hidden"
+        />
+    </svg>
+    <div id="overlay" class="overlay"></div>
+    <h1
+        id="winMessage"
+        style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            font-size: 90px;
+        "
+    ></h1>
+    <div
+        id="message"
+        style="
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            cursor: pointer;
+            position: fixed;
+            top: 94%;
+            left: 0%;
+            /*transform: translate(-50%, -50%);*/
+
+            width: 100%;
+            background-color: #545454;
+            font-size: 25px;
+        "
+    ></div>
+</body>
+
+<script>
+    let player1 = false;
+
+    const items = document.querySelectorAll(".container div");
+    let x_moves = [];
+    let y_moves = [];
+
+    const wins = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+    gameOver = false;
+    items.forEach((item, index) => {
+        item.onclick = () => {
+            if (gameOver === false) {
+                if (item.textContent !== "") return;
+
+                player1 = !player1;
+
+                item.textContent = player1 ? "X" : "O";
+                item.className = player1 ? "x" : "o";
+
+                if (player1) {
+                    x_moves.push(index);
+                } else {
+                    y_moves.push(index);
+                }
+            }
+            const moves = player1 ? x_moves : y_moves;
+
+            for (let i = 0; i < wins.length; i++) {
+                const won = wins[i].every(j => moves.includes(j));
+                const draw =
+                    i === wins.length - 1 &&
+                    x_moves.length + y_moves.length === 9;
+
+                if (won || draw) {
+                    if (won) {
+                        drawLine(wins[i]);
+
+                        setTimeout(() => {
+                            // alert(player1 ? "Player 1 won" : "Player 2 won");
+                            document.getElementById("overlay").style.display =
+                                "block";
+                            winMessage.textContent = player1
+                                ? "X \nWINNER!"
+                                : "O \nWINNER!";
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                            //alert("Game Draw");
+                            document.getElementById("overlay").style.display =
+                                "block";
+                            winMessage.textContent = "XO\nDRAW!";
+                        }, 500);
+                    }
+                    gameOver = true;
+
+                    message.textContent = "Restart Game";
+
+                    message.onclick = function () {
+                        document.getElementById("overlay").style.display =
+                            "none";
+                        winMessage.textContent = "";
+                        gameOver = false;
+                        x_moves = [];
+                        y_moves = [];
+                        player1 = false;
+
+                        items.forEach(item => {
+                            item.textContent = "";
+                        });
+
+                        document
+                            .getElementById("winLine")
+                            .setAttribute("visibility", "hidden");
+
+                        message.textContent = "";
+                    };
+
+                    break;
+                }
+            }
+        };
+    });
+
+    function drawLine(win) {
+        const r1 = items[win[0]].getBoundingClientRect();
+        const r2 = items[win[2]].getBoundingClientRect();
+
+        const x1 = r1.left + r1.width / 2;
+        const y1 = r1.top + r1.height / 2;
+
+        const x2 = r2.left + r2.width / 2;
+        const y2 = r2.top + r2.height / 2;
+
+        const line = document.getElementById("winLine");
+
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("visibility", "visible");
+    }
+</script>
