@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+    }
+
+    .container {
+      padding: 5px;
+      display: grid;
+      gap: 5px;
+      grid-template-columns: repeat(5, 1fr);
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+
+    .container div {
+      width: 65px;
+      height: 65px;
+      border: 1px solid grey;
+      font-size: 40px;
+      color: white;
+      text-align: center;
+    }
+
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .keyboardRow {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .keyboardRow div {
+      width: 65px;
+      height: 65px;
+      background: grey;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 35px;
+      border-radius: 5px;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container"></div>
+
+<div class="keyboard">
+
+    <div class="keyboardRow">
+        <div>Q</div>
+        <div>W</div>
+        <div>E</div>
+        <div>R</div>
+        <div>T</div>
+        <div>Y</div>
+        <div>U</div>
+        <div>clickIndex</div>
+        <div>O</div>
+        <div>P</div>
+    </div>
+
+    <div class="keyboardRow">
+        <div style="width:100px;font-size: 17px;">ENTER</div>
+
+        <div>A</div>
+        <div>S</div>
+        <div>D</div>
+        <div>F</div>
+        <div>G</div>
+        <div>H</div>
+        <div>J</div>
+        <div>K</div>
+        <div>L</div>
+    </div>
+
+    <div class="keyboardRow">
+        <div>Z</div>
+        <div>X</div>
+        <div>C</div>
+        <div>V</div>
+        <div>B</div>
+        <div>N</div>
+        <div>M</div>
+
+        <div style="width:120px;">⌫</div>
+    </div>
+
+</div>
+<script>
+  document.querySelector(".container").innerHTML = `<div class="cell"></div>`.repeat(30);
+
+const keyboard_buttons = document.querySelectorAll(".keyboardRow div");
+const cell = document.querySelectorAll(".cell");
+
+let clickIndex = 0;
+let rowStart = 0;
+const word = "HELLO";
+
+keyboard_buttons.forEach((button) => {
+    const button_text = button.textContent;
+
+    if (button_text === "ENTER") {
+
+        button.onclick = function () {
+
+    if (clickIndex - rowStart !== 5) return;
+
+    // Copy of the answer that we'll "use up"
+    const remaining = word.split("");
+
+    // First pass: mark greens
+    for (let i = 0; i < 5; i++) {
+        const guess = cell[rowStart + i].textContent;
+
+        if (guess === word[i]) {
+            cell[rowStart + i].style.backgroundColor = "green";
+            remaining[i] = null;   // consume this letter
+        }
+    }
+
+    // Second pass: mark yellows and greys
+    for (let i = 0; i < 5; i++) {
+
+        const guess = cell[rowStart + i].textContent;
+
+        // Skip already-green letters
+        if (cell[rowStart + i].style.backgroundColor === "green")
+            continue;
+
+        const index = remaining.indexOf(guess);
+
+        if (index !== -1) {
+            cell[rowStart + i].style.backgroundColor = "gold";
+            cell[rowStart + i].style.color = "black";
+            remaining[index] = null; // consume one occurrence
+        }
+        else {
+            cell[rowStart + i].style.backgroundColor = "grey";
+        }
+    }
+
+    rowStart += 5;
+};
+
+    }
+    else if (button_text === "⌫") {
+
+        button.onclick = function () {
+            if (clickIndex > rowStart) {
+                clickIndex--;
+                cell[clickIndex].textContent = "";
+            }
+        };
+
+    }
+    else {
+
+        button.onclick = function () {
+
+            if (clickIndex >= rowStart + 5) return;
+
+            cell[clickIndex].textContent = button_text;
+            clickIndex++;
+        };
+
+    }
+});
+</script>
+
+</body>
+</html>
